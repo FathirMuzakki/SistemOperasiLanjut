@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Shortest Job First</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
+    <link href="css/styles.css" rel="stylesheet" />
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f5f7fa; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; background: white; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background: #007bff; color: white; }
+    input { padding: 5px; width: 80px; margin: 5px; }
+    button {
+            padding: 8px 16px;
+            background-color: #03f2ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    button:hover { background: #0056b3; color: white; }
+  </style>
+</head>
+<body class="sb-nav-fixed">
+  <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+        <a class="navbar-brand ps-3" href="index.html">Fathir Muzakki</a>
+        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+    </nav>
+    <div id="layoutSidenav">
+        <div id="layoutSidenav_nav">
+            <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                <div class="sb-sidenav-menu">
+                    <div class="nav">
+                        <div class="sb-sidenav-menu-heading">Menu</div>
+                        <a class="nav-link" href="index.html">
+                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                            Pilih Metode
+                        </a>
+                        <div class="sb-sidenav-menu-heading">Non-Preemptive</div>
+                        <a class="nav-link" href="fifo.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-database"></i></div>FIFO</a>
+                        <a class="nav-link" href="sjf.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-recycle"></i></div>SJF</a>
+                        <div class="sb-sidenav-menu-heading">Preemptive</div>
+                        <a class="nav-link" href="roundrobin.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-robot"></i></div>ROUND ROBIN</a>
+                        <a class="nav-link" href="srf.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-repeat"></i></div>SRF</a>
+                    </div>
+                </div>
+                <div class="sb-sidenav-footer">
+                    <div class="small">Hormat Saya:</div>
+                    Fathir Muzakki
+                </div>
+            </nav>
+        </div>
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    <h1 class="mt-4">Simulasi Shortest Job First</h1>
+                    <label>Jumlah Proses:</label>
+                    <input type="number" id="n" min="1" required>
+                    <button onclick="buatForm()">Buat Form</button>
+                    <div id="formContainer"></div>
+                    <div id="hasil"></div>
+                </div>
+            </main>
+        </div>
+    </div>  
+<br>
+  <script>
+    function buatForm() {
+      const n = +document.getElementById('n').value;
+      let html = '<form id="sjfForm">';
+      for (let i = 0; i < n; i++) {
+        html += `P${i+1}: Cpu Time <input name="bt" type="number" required> `
+             + `Waktu Datang <input name="at" type="number" required><br>`;
+      }
+      html += '<button type="button" onclick="hitung()">Hitung SJF</button></form>';
+      document.getElementById('formContainer').innerHTML = html;
+      document.getElementById('hasil').innerHTML = '';
+    }
+
+    function hitung() {
+  const form = document.getElementById('sjfForm');
+  const ats = Array.from(form.elements['at']).map(i => +i.value);
+  const bts = Array.from(form.elements['bt']).map(i => +i.value);
+  const n = ats.length;
+
+  const procs = ats.map((at, i) => ({
+    id: i + 1,
+    at,
+    bt: bts[i],
+    ct: 0, wt: 0, tat: 0,
+    done: false
+  }));
+
+  let currentTime = 0, doneCount = 0;
+  while (doneCount < n) {
+    const ready = procs.filter(p => !p.done && p.at <= currentTime);
+    let next;
+    if (ready.length) {
+      ready.sort((a, b) => a.bt - b.bt);
+      next = ready[0];
+    } else {
+      next = procs.filter(p => !p.done).sort((a, b) => a.at - b.at)[0];
+      currentTime = next.at;
+    }
+    next.ct = currentTime + next.bt;
+    next.tat = next.ct - next.at;
+    next.wt = next.tat - next.bt;
+    next.done = true;
+    currentTime = next.ct;
+    doneCount++;
+  }
+
+  // **Tambahkan langkah sorting di sini berdasarkan WT terkecil**
+  procs.sort((a, b) => a.wt - b.wt);
+
+  let html = `<table>
+      <tr><th>Proses</th><th>Cpu Time</th><th>Waktu Datang</th><th>Waktu Tunggu</th><th>Turnaround</th></tr>`;
+  let totalWT = 0, totalTAT = 0;
+  procs.forEach(p => {
+    html += `<tr><td>P${p.id}</td><td>${p.bt}</td><td>${p.at}</td>`
+          + `<td>${p.wt}</td><td>${p.tat}</td></tr>`;
+    totalWT += p.wt; totalTAT += p.tat;
+  });
+  html += `</table>
+    <p><strong>Rata-Rata Waktu Tunggu:</strong> ${(totalWT/n).toFixed(2)}</p>
+    <p><strong>Rata-Rata Turnaround Time:</strong> ${(totalTAT/n).toFixed(2)}</p>`;
+  document.getElementById('hasil').innerHTML = html;
+}
+
+  </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="js/scripts.js"></script>
+</body>
+</html>

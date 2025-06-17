@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Round Robin</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
+    <link href="css/styles.css" rel="stylesheet" />
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        label {
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        input[type="number"] {
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background-color: #11ff05;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #004c99;
+        }
+
+        form p {
+            margin: 10px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        #hasil {
+            margin-top: 30px;
+        }
+
+        .container-fluid {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body class="sb-nav-fixed">
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+        <a class="navbar-brand ps-3" href="index.html">Fathir Muzakki</a>
+        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+    </nav>
+    <div id="layoutSidenav">
+        <div id="layoutSidenav_nav">
+            <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                <div class="sb-sidenav-menu">
+                    <div class="nav">
+                        <div class="sb-sidenav-menu-heading">Menu</div>
+                        <a class="nav-link" href="index.html">
+                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                            Pilih Metode
+                        </a>
+                        <div class="sb-sidenav-menu-heading">Non-Preemptive</div>
+                        <a class="nav-link" href="fifo.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-database"></i></div>FIFO</a>
+                        <a class="nav-link" href="sjf.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-recycle"></i></div>SJF</a>
+                        <div class="sb-sidenav-menu-heading">Preemptive</div>
+                        <a class="nav-link" href="roundrobin.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-robot"></i></div>ROUND ROBIN</a>
+                        <a class="nav-link" href="srf.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-repeat"></i></div>SRF</a>
+                    </div>
+                </div>
+                <div class="sb-sidenav-footer">
+                    <div class="small">Hormat Saya:</div>
+                    Fathir Muzakki
+                </div>
+            </nav>
+        </div>
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    <h1 class="mt-4">Simulasi Round Robin</h1>
+                    <label>Jumlah Proses:</label>
+                    <input type="number" id="jumlahProses" min="1" required>
+                    <button onclick="buatForm()">Buat Form</button>
+                    <div id="formContainer"></div>
+                    <div id="hasil"></div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        function buatForm() {
+            const jumlah = document.getElementById("jumlahProses").value;
+            const container = document.getElementById("formContainer");
+            container.innerHTML = "";
+
+            if (jumlah < 1) {
+                container.innerHTML = "<p style='color:red;'>Masukkan jumlah proses yang valid.</p>";
+                return;
+            }
+
+            let html = "<form id='dataForm'>";
+            for (let i = 0; i < jumlah; i++) {
+                html += `<p>Proses P${i + 1}: CPU Time <input type="number" name="burst" required></p>`;
+            }
+            html += `<p>Quantum Time        <input type="number" id="quantum" required></p>`;
+            html += `<p>Context Switch <input type="number" id="contextSwitchTime"  required></p>`;
+            html += `<button type="button" onclick="hitung()">Hitung</button>`;
+            html += "</form>";
+            container.innerHTML = html;
+        }
+
+        function hitung() {
+    const form = document.forms["dataForm"];
+    const burstInputs = form.querySelectorAll("input[name='burst']");
+    const burstTime = Array.from(burstInputs).map(input => parseInt(input.value));
+    const quantum = parseInt(document.getElementById("quantum").value);
+    const contextSwitchTime = parseInt(document.getElementById("contextSwitchTime").value) || 0;
+    const n = burstTime.length;
+    const sisaWaktu = [...burstTime];
+    const waitingTime = Array(n).fill(0);
+    const turnaroundTime = Array(n).fill(0);
+
+    let waktu = 0;
+    let selesai;
+    let lastExecuted = -1;
+    let contextSwitchCount = 0;
+
+    do {
+        selesai = true;
+        for (let i = 0; i < n; i++) {
+            if (sisaWaktu[i] > 0) {
+                selesai = false;
+
+                // Tambah context switch jika berpindah ke proses baru
+                if (lastExecuted !== -1 && lastExecuted !== i) {
+                    waktu += contextSwitchTime;
+                    contextSwitchCount++;
+                }
+
+                if (sisaWaktu[i] > quantum) {
+                    waktu += quantum;
+                    sisaWaktu[i] -= quantum;
+                } else {
+                    waktu += sisaWaktu[i];
+                    waitingTime[i] = waktu - burstTime[i];
+                    sisaWaktu[i] = 0;
+                }
+
+                lastExecuted = i;
+            }
+        }
+    } while (!selesai);
+
+    for (let i = 0; i < n; i++) {
+        turnaroundTime[i] = waitingTime[i] + burstTime[i];
+    }
+
+    let output = `<h3>Hasil:</h3>
+        <table>
+            <tr>
+                <th>Proses</th>
+                <th>CPU Time</th>
+                <th>Waiting Time</th>
+                <th>Turnaround Time</th>
+            </tr>`;
+
+    let totalWaiting = 0, totalTurnaround = 0;
+    for (let i = 0; i < n; i++) {
+        output += `<tr>
+            <td>P${i + 1}</td>
+            <td>${burstTime[i]}</td>
+            <td>${waitingTime[i]}</td>
+            <td>${turnaroundTime[i]}</td>
+        </tr>`;
+        totalWaiting += waitingTime[i];
+        totalTurnaround += turnaroundTime[i];
+    }
+
+    output += `</table>
+        <p><strong>Rata-rata Waiting Time:</strong> ${(totalWaiting / n).toFixed(2)}</p>
+        <p><strong>Rata-rata Turnaround Time:</strong> ${(totalTurnaround / n).toFixed(2)}</p>
+        <p><strong>Total Context Switch:</strong> ${contextSwitchCount}</p>
+        <p><strong>Total Waktu Termasuk Context Switch:</strong> ${waktu}</p>`;
+
+    document.getElementById("hasil").innerHTML = output;
+}
+
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="js/scripts.js"></script>
+</body>
+</html>

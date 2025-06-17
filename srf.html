@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Shortest Remaining Time First</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
+    <link href="css/styles.css" rel="stylesheet" />
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+<style>
+  body { font-family: sans-serif; padding: 20px; background: #f5f7fa; }
+  table { border-collapse: collapse; width: 100%; margin-top: 20px; background: white; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+  th { background: #28a745; color: white; }
+  input { padding: 5px; width: 80px; margin: 5px; }
+  button { padding: 8px 16px; margin-top: 10px; background: #28a745; color: white; border: none; cursor: pointer; }
+  .gantt { display: flex; margin-top: 20px; }
+  .gantt div { padding: 4px; margin:1px; background: #007bff; color: white; font-size:12px; text-align:center; }
+</style>
+</head>
+<body class="sb-nav-fixed">
+  <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+        <a class="navbar-brand ps-3" href="index.html">Fathir Muzakki</a>
+        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+    </nav>
+    <div id="layoutSidenav">
+        <div id="layoutSidenav_nav">
+            <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                <div class="sb-sidenav-menu">
+                    <div class="nav">
+                        <div class="sb-sidenav-menu-heading">Menu</div>
+                        <a class="nav-link" href="index.html">
+                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                            Pilih Metode
+                        </a>
+                        <div class="sb-sidenav-menu-heading">Non-Preemptive</div>
+                        <a class="nav-link" href="fifo.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-database"></i></div>FIFO</a>
+                        <a class="nav-link" href="sjf.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-recycle"></i></div>SJF</a>
+                        <div class="sb-sidenav-menu-heading">Preemptive</div>
+                        <a class="nav-link" href="roundrobin.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-robot"></i></div>ROUND ROBIN</a>
+                        <a class="nav-link" href="srf.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-repeat"></i></div>SRF</a>
+                    </div>
+                </div>
+                <div class="sb-sidenav-footer">
+                    <div class="small">Hormat Saya:</div>
+                    Fathir Muzakki
+                </div>
+            </nav>
+        </div>
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    <h1 class="mt-4">Simulasi Shortest Remaining Time First</h1>
+                    <label>Jumlah Proses:</label>
+                    <input type="number" id="jumlahProses" min="1" required>
+                    <button onclick="buatForm()">Buat Form</button>
+                    <div id="formContainer"></div>
+                    <div id="hasil"></div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+<script>
+function buatForm() {
+  const n = +document.getElementById('n').value;
+  if(n<1){ return }
+  let html = '<form id="srtfForm">';
+  for(let i=0;i<n;i++){
+    html += `P${i+1}: Arrival <input name="at" type="number" required> Burst <input name="bt" type="number" required><br>`;
+  }
+  html += '<button type="button" onclick="hitung()">Hitung SRTF</button></form>';
+  document.getElementById('formContainer').innerHTML = html;
+  document.getElementById('hasil').innerHTML = '';
+  document.getElementById('gantt').innerHTML = '';
+}
+
+function hitung() {
+  const form = document.getElementById('srtfForm');
+  const ats = Array.from(form.elements['at']).map(i=>+i.value);
+  const bts = Array.from(form.elements['bt']).map(i=>+i.value);
+  const n = ats.length;
+  const procs = ats.map((at,i)=>({
+    id: i+1,
+    at, bt: bts[i],
+    rem: bts[i],
+    ct:0, wt:0, tat:0, done:false
+  }));
+
+  let t=0, doneCount=0;
+  const gantt = [];
+  while(doneCount<n){
+    let idx=-1, minRem=Infinity;
+    procs.forEach((p,i)=>{
+      if(!p.done && p.at<=t && p.rem<minRem){
+        minRem=p.rem; idx=i;
+      }
+    });
+    if(idx!==-1){
+      procs[idx].rem--;
+      gantt.push(`P${procs[idx].id}`);
+      if(procs[idx].rem===0){
+        const p = procs[idx];
+        p.done=true; doneCount++;
+        p.ct = t+1;
+        p.tat = p.ct - p.at;
+        p.wt = p.tat - p.bt;
+      }
+    } else {
+      gantt.push('-'); // idle
+    }
+    t++;
+  }
+
+  // tampilkan hasil
+  let html = `<table>
+    <tr><th>Proses</th><th>Arrival</th><th>Burst</th><th>Waiting</th><th>Turnaround</th></tr>`;
+  let sumWT=0, sumTAT=0;
+  procs.forEach(p=>{
+    html += `<tr><td>P${p.id}</td><td>${p.at}</td><td>${p.bt}</td><td>${p.wt}</td><td>${p.tat}</td></tr>`;
+    sumWT+=p.wt; sumTAT+=p.tat;
+  });
+  html += `</table>
+    <p><strong>Avg Waiting Time:</strong> ${(sumWT/n).toFixed(2)}</p>
+    <p><strong>Avg Turnaround Time:</strong> ${(sumTAT/n).toFixed(2)}</p>`;
+  document.getElementById('hasil').innerHTML = html;
+
+  // Gantt chart sederhana
+  const gdiv = document.getElementById('gantt');
+  let current = gantt[0], len=1;
+  gantt.slice(1).forEach(step=>{
+    if(step===current){
+      len++;
+    } else {
+      const d = document.createElement('div');
+      d.style.width = `${len*20}px`;
+      d.textContent = current;
+      gdiv.appendChild(d);
+      current=step; len=1;
+    }
+  });
+  const d = document.createElement('div');
+  d.style.width = `${len*20}px`;
+  d.textContent = current;
+  gdiv.appendChild(d);
+}
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="js/scripts.js"></script>
+</body>
+</html>
