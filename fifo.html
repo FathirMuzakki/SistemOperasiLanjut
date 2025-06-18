@@ -24,13 +24,22 @@
         }
         input[type="number"] {
             padding: 5px;
-            width: 80px;
+            width: 100px;
             margin-right: 10px;
         }
         button {
             padding: 8px 16px;
-            background-color: #ff0404;
-            color: rgb(248, 248, 248);
+            background-color: #00ddff;
+            color: rgb(255, 18, 18);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button1 {
+            padding: 8px 16px;
+            background-color: #00ffb7;
+            color: rgba(231, 4, 4, 0.693);
             border: none;
             border-radius: 4px;
             cursor: pointer;
@@ -50,6 +59,33 @@
         th {
             background-color: #007bff;
             color: white;
+        }
+        /* Gaya baru untuk form input */
+        .form-container {
+            margin-top: 20px;
+        }
+        .process-form {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .process-label {
+            font-weight: bold;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .input-field {
+            display: flex;
+            align-items: center;
+        }
+        .input-field label {
+            margin-right: 5px;
+            min-width: 80px;
         }
     </style>
 </head>
@@ -91,7 +127,7 @@
                     <br>
                     <button onclick="buatForm()">Buat Form</button>
                     <br>
-                    <div id="formContainer"></div>
+                    <div id="formContainer" class="form-container"></div>
                     <div id="hasil"></div>
                 </div>
             </main>
@@ -111,19 +147,31 @@ function buatForm() {
 
     let html = "<form id='dataForm'>";
     for (let i = 0; i < jumlah; i++) {
-        html += `<p>Proses P${i + 1}: 
-            Waktu Datang: <input type="number" name="arrival" required>
-            CPU Time: <input type="number" name="burst" required></p>`;
+        html += `
+        <div class="process-form">
+            <div class="process-label">Job Ke-${i + 1}</div>
+            <br>
+            <div class="input-group">
+                <div class="input-field">
+                    <label>Cpu Time:</label>
+                    <input type="number" name="burst" required>
+                </div>
+                <div class="input-field">
+                    <label>Waktu Datang:</label>
+                    <input type="number" name="arrival" required>
+                </div>
+            </div>
+        </div>`;
     }
-    html += `<button type="button" onclick="hitungFIFO()">Hitung FIFO</button>`;
+    html += `<button1 type="button" onclick="hitungFIFO()">Hitung FIFO</button1>`;
     html += "</form>";
     container.innerHTML = html;
 }
 
 function hitungFIFO() {
     const form = document.forms["dataForm"];
-    const arrivalInputs = form.querySelectorAll("input[name='arrival']");
     const burstInputs = form.querySelectorAll("input[name='burst']");
+    const arrivalInputs  = form.querySelectorAll("input[name='arrival']");
     const n = burstInputs.length;
 
     const proses = [];
@@ -131,8 +179,8 @@ function hitungFIFO() {
     for (let i = 0; i < n; i++) {
         proses.push({
             id: i + 1,
-            arrival: parseInt(arrivalInputs[i].value),
             burst: parseInt(burstInputs[i].value),
+            arrival: parseInt(arrivalInputs[i].value),
         });
     }
 
@@ -168,24 +216,24 @@ function hitungFIFO() {
     <table>
         <tr>
             <th>Proses</th>
-            <th>Arrival Time</th>
-            <th>CPU Time</th>
-            <th>Waiting Time</th>
+            <th>Cpu Time</th>
+            <th>Waktu Datang</th>
+            <th>Waktu Tunggu</th>
             <th>Turnaround Time</th>
         </tr>`;
 
     hasil.forEach(p => {
         output += `<tr>
             <td>P${p.id}</td>
-            <td>${p.arrival}</td>
             <td>${p.burst}</td>
+            <td>${p.arrival}</td>
             <td>${p.waiting}</td>
             <td>${p.turnaround}</td>
         </tr>`;
     });
 
     output += `</table>
-        <p><strong>Rata-rata Waiting Time:</strong> ${(totalWaiting / n).toFixed(2)}</p>
+        <p><strong>Rata-rata Waktu Tunggu:</strong> ${(totalWaiting / n).toFixed(2)}</p>
         <p><strong>Rata-rata Turnaround Time:</strong> ${(totalTurnaround / n).toFixed(2)}</p>`;
 
     document.getElementById("hasil").innerHTML = output;
