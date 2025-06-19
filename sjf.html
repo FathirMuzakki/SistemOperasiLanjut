@@ -4,32 +4,385 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <meta name="description" content="" />
-    <meta name="author" content="" />
-    <title>Shortest Job First</title>
+    <meta name="description" content="Shortest Job First (SJF) Scheduling Algorithm Simulation" />
+    <meta name="author" content="Fathir Muzakki" />
+    <title>Shortest Job First (SJF)</title>
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
     <link href="css/styles.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
-  <style>
-    body { font-family: sans-serif; padding: 20px; background: #f5f7fa; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; background: white; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    th { background: #007bff; color: white; }
-    input { padding: 5px; width: 80px; margin: 5px; }
-    button {
-            padding: 8px 16px;
-            background-color: #03f2ff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 10px;
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --dark: #1b263b;
+            --light: #f8f9fa;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --info: #43aa8b;
         }
-    button:hover { background: #0056b3; color: white; }
-  </style>
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7ff;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        /* Layout improvements for mobile */
+        #layoutSidenav {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        #layoutSidenav_content {
+            flex: 1;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .glass-card:hover {
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        h1, h2, h3, h4 {
+            color: var(--dark);
+            font-weight: 600;
+            margin-top: 0;
+        }
+        
+        h1 {
+            font-size: clamp(1.8rem, 4vw, 2.2rem);
+            margin-bottom: 1.5rem;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        label {
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+            display: block;
+            font-size: clamp(0.9rem, 3vw, 1rem);
+        }
+        
+        input[type="number"] {
+            padding: 10px 15px;
+            width: 100%;
+            max-width: 120px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background-color: rgba(255,255,255,0.7);
+            box-sizing: border-box;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-secondary {
+            background-color: var(--accent);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(72, 149, 239, 0.3);
+        }
+        
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+            margin-top: 20px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            font-size: clamp(0.8rem, 2vw, 1rem);
+        }
+        
+        th, td {
+            padding: 12px 8px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
+        }
+        
+        tr:nth-child(even) {
+            background-color: rgba(248, 249, 250, 0.5);
+        }
+        
+        tr:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        /* Form styles */
+        .form-container {
+            margin-top: 20px;
+        }
+        
+        .process-form {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 10px;
+        }
+        
+        .process-label {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: clamp(1rem, 3vw, 1.1rem);
+        }
+        
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .input-field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        /* Gantt Chart Styles */
+        .gantt-container {
+            margin: 30px 0;
+            overflow-x: auto;
+            padding: 15px 0;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .gantt-chart {
+            display: flex;
+            height: 60px;
+            position: relative;
+            margin-bottom: 30px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 8px;
+            padding: 5px;
+            min-width: fit-content;
+        }
+        
+        .gantt-bar {
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
+            position: relative;
+            border-radius: 6px;
+            margin-right: 2px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .gantt-bar:hover {
+            transform: scale(1.05);
+            z-index: 2;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        .gantt-bar.idle {
+            background-color: var(--danger);
+        }
+        
+        .gantt-time {
+            position: absolute;
+            bottom: -25px;
+            width: 100%;
+            text-align: center;
+            font-size: clamp(0.6rem, 2vw, 0.7rem);
+            color: var(--dark);
+            font-weight: 500;
+        }
+        
+        .gantt-process-label {
+            position: absolute;
+            top: -25px;
+            width: 100%;
+            text-align: center;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: clamp(0.7rem, 2vw, 0.8rem);
+        }
+        
+        /* Navigation styles */
+        nav.sb-topnav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 10px 15px;
+        }
+        
+        .navbar-brand {
+            font-size: 1.2rem;
+            white-space: nowrap;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            #layoutSidenav_content {
+                padding: 15px;
+            }
+            
+            .glass-card {
+                padding: 15px;
+            }
+            
+            .process-form {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .input-group {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .input-field {
+                width: 100%;
+                min-width: 100%;
+            }
+            
+            input[type="number"] {
+                max-width: 100%;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-top: 10px;
+                padding: 10px 15px;
+            }
+            
+            th, td {
+                padding: 8px 5px;
+            }
+            
+            .gantt-bar {
+                height: 40px;
+            }
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+        
+        /* Performance summary grid */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+    </style>
 </head>
 <body class="sb-nav-fixed">
-  <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
         <a class="navbar-brand ps-3" href="index.html">Fathir Muzakki</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle"><i class="fas fa-bars"></i></button>
     </nav>
@@ -40,12 +393,12 @@
                     <div class="nav">
                         <div class="sb-sidenav-menu-heading">Menu</div>
                         <a class="nav-link" href="index.html">
-                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                            <div class="sb-nav-link-icon"><i class="fa-solid fa-house"></i></div>
                             Pilih Metode
                         </a>
                         <div class="sb-sidenav-menu-heading">Non-Preemptive</div>
                         <a class="nav-link" href="fifo.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-database"></i></div>FIFO</a>
-                        <a class="nav-link" href="sjf.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-recycle"></i></div>SJF</a>
+                        <a class="nav-link active" href="sjf.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-recycle"></i></div>SJF</a>
                         <div class="sb-sidenav-menu-heading">Preemptive</div>
                         <a class="nav-link" href="roundrobin.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-robot"></i></div>ROUND ROBIN</a>
                         <a class="nav-link" href="srf.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-repeat"></i></div>SRF</a>
@@ -59,82 +412,294 @@
         </div>
         <div id="layoutSidenav_content">
             <main>
-                <div class="container-fluid px-4">
-                    <h1 class="mt-4">Simulasi Shortest Job First</h1>
-                    <label>Jumlah Proses:</label>
-                    <input type="number" id="n" min="1" required>
-                    <button onclick="buatForm()">Buat Form</button>
-                    <div id="formContainer"></div>
-                    <div id="hasil"></div>
+                <div class="container-fluid px-3 px-md-4">
+                    <div class="glass-card animate-fade">
+                        <h1><i class="fas fa-recycle mr-2"></i> Simulasi Penjadwalan SJF</h1>
+                        <div class="form-group">
+                            <label for="jumlahProses">Jumlah Proses:</label>
+                            <div class="input-group" style="gap: 15px; align-items: center;">
+                                <input type="number" id="jumlahProses" min="1" required>
+                                <button class="btn btn-primary" onclick="buatForm()">
+                                    <i class="fas fa-plus-circle mr-1"></i> Buat Form
+                                </button>
+                                <button class="btn btn-danger" onclick="awal()">
+                                    <i class="fa-solid fa-house mr-1"></i> Halaman Awal
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="formContainer" class="form-container"></div>
+                    <div id="hasil" class="glass-card animate-fade" style="display: none;"></div>
                 </div>
             </main>
         </div>
-    </div>  
-<br>
-  <script>
-    function buatForm() {
-      const n = +document.getElementById('n').value;
-      let html = '<form id="sjfForm">';
-      for (let i = 0; i < n; i++) {
-        html += `P${i+1}: Cpu Time <input name="bt" type="number" required> `
-             + `Waktu Datang <input name="at" type="number" required><br>`;
-      }
-      html += '<button type="button" onclick="hitung()">Hitung SJF</button></form>';
-      document.getElementById('formContainer').innerHTML = html;
-      document.getElementById('hasil').innerHTML = '';
+    </div>
+
+<script>
+function buatForm() {
+    const jumlah = parseInt(document.getElementById("jumlahProses").value);
+    const container = document.getElementById("formContainer");
+    container.innerHTML = "";
+
+    if (isNaN(jumlah) || jumlah < 1) {
+        container.innerHTML = `<div class="glass-card" style="color: var(--danger);">
+            <i class="fas fa-exclamation-circle mr-2"></i> Masukkan jumlah proses yang valid.
+        </div>`;
+        return;
     }
 
-    function hitung() {
-  const form = document.getElementById('sjfForm');
-  const ats = Array.from(form.elements['at']).map(i => +i.value);
-  const bts = Array.from(form.elements['bt']).map(i => +i.value);
-  const n = ats.length;
-
-  const procs = ats.map((at, i) => ({
-    id: i + 1,
-    at,
-    bt: bts[i],
-    ct: 0, wt: 0, tat: 0,
-    done: false
-  }));
-
-  let currentTime = 0, doneCount = 0;
-  while (doneCount < n) {
-    const ready = procs.filter(p => !p.done && p.at <= currentTime);
-    let next;
-    if (ready.length) {
-      ready.sort((a, b) => a.bt - b.bt);
-      next = ready[0];
-    } else {
-      next = procs.filter(p => !p.done).sort((a, b) => a.at - b.at)[0];
-      currentTime = next.at;
+    let html = `<div class="glass-card animate-fade">
+        <h3><i class="fas fa-edit mr-2"></i> Input Proses</h3>
+        <form id="dataForm">`;
+    
+    for (let i = 0; i < jumlah; i++) {
+        html += `
+        <div class="process-form">
+            <div class="process-label"><i class="fas fa-tasks mr-2"></i> Job Ke-${i + 1}</div>
+            <div class="input-group">
+                <div class="input-field">
+                    <label><i class="fas fa-microchip mr-1"></i> CPU Time:</label>
+                    <input type="number" name="burst" min="1" value="1" required>
+                </div>
+                <div class="input-field">
+                    <label><i class="fas fa-clock mr-1"></i> Waktu Datang:</label>
+                    <input type="number" name="arrival" min="0" value="0" required>
+                </div>
+            </div>
+        </div>`;
     }
-    next.ct = currentTime + next.bt;
-    next.tat = next.ct - next.at;
-    next.wt = next.tat - next.bt;
-    next.done = true;
-    currentTime = next.ct;
-    doneCount++;
-  }
-
-  // **Tambahkan langkah sorting di sini berdasarkan WT terkecil**
-  procs.sort((a, b) => a.wt - b.wt);
-
-  let html = `<table>
-      <tr><th>Proses</th><th>Cpu Time</th><th>Waktu Datang</th><th>Waktu Tunggu</th><th>Turnaround</th></tr>`;
-  let totalWT = 0, totalTAT = 0;
-  procs.forEach(p => {
-    html += `<tr><td>P${p.id}</td><td>${p.bt}</td><td>${p.at}</td>`
-          + `<td>${p.wt}</td><td>${p.tat}</td></tr>`;
-    totalWT += p.wt; totalTAT += p.tat;
-  });
-  html += `</table>
-    <p><strong>Rata-Rata Waktu Tunggu:</strong> ${(totalWT/n).toFixed(2)}</p>
-    <p><strong>Rata-Rata Turnaround Time:</strong> ${(totalTAT/n).toFixed(2)}</p>`;
-  document.getElementById('hasil').innerHTML = html;
+    
+    html += `<button type="button" class="btn btn-secondary" onclick="hitungSJF()">
+            <i class="fas fa-calculator mr-1"></i> Hitung SJF
+        </button>
+        </form>
+    </div>`;
+    
+    container.innerHTML = html;
+    document.getElementById("hasil").style.display = "none";
 }
 
-  </script>
+function awal() {
+    window.location.href = 'index.html'; 
+}
+
+function hitungSJF() {
+    const form = document.forms["dataForm"];
+    if (!form) {
+        alert('Silakan buat form input terlebih dahulu');
+        return;
+    }
+    
+    const burstInputs = form.querySelectorAll("input[name='burst']");
+    const arrivalInputs = form.querySelectorAll("input[name='arrival']");
+    const n = burstInputs.length;
+
+    const proses = [];
+
+    for (let i = 0; i < n; i++) {
+        const burst = parseInt(burstInputs[i].value);
+        const arrival = parseInt(arrivalInputs[i].value);
+        
+        if (isNaN(burst) || burst < 1) {
+            alert(`CPU Time untuk Proses ${i+1} tidak valid (minimal 1)`);
+            return;
+        }
+        
+        if (isNaN(arrival)) {
+            alert(`Waktu Datang untuk Proses ${i+1} tidak valid`);
+            return;
+        }
+        
+        proses.push({
+            id: i + 1,
+            burst: burst,
+            arrival: arrival,
+            remaining: burst,
+            completed: false
+        });
+    }
+
+    // SJF Non-preemptive Algorithm
+    let waktu = 0;
+    let totalWaiting = 0;
+    let totalTurnaround = 0;
+    const hasil = [];
+    const ganttData = [];
+    let completed = 0;
+
+    while (completed < n) {
+        // Find processes that have arrived and not yet completed
+        let eligible = proses.filter(p => 
+            !p.completed && p.arrival <= waktu
+        );
+        
+        if (eligible.length === 0) {
+            // No process available, advance time to next arrival
+            const nextArrivals = proses
+                .filter(p => !p.completed)
+                .map(p => p.arrival);
+            
+            if (nextArrivals.length === 0) break;
+            
+            const nextArrival = Math.min(...nextArrivals);
+            const idleTime = nextArrival - waktu;
+            
+            if (idleTime > 0) {
+                ganttData.push({
+                    type: 'idle',
+                    start: waktu,
+                    end: nextArrival,
+                    duration: idleTime
+                });
+            }
+            
+            waktu = nextArrival;
+            continue;
+        }
+        
+        // Sort eligible processes by burst time (SJF)
+        eligible.sort((a, b) => a.burst - b.burst);
+        
+        // Execute the shortest job
+        const currentProcess = eligible[0];
+        const startTime = waktu;
+        const completionTime = startTime + currentProcess.burst;
+        const waitingTime = startTime - currentProcess.arrival;
+        const turnaroundTime = completionTime - currentProcess.arrival;
+
+        hasil.push({
+            id: currentProcess.id,
+            arrival: currentProcess.arrival,
+            burst: currentProcess.burst,
+            waiting: waitingTime,
+            turnaround: turnaroundTime,
+            startTime: startTime,
+            completionTime: completionTime
+        });
+
+        // Add to Gantt chart
+        ganttData.push({
+            type: 'process',
+            process: currentProcess.id,
+            start: startTime,
+            end: completionTime,
+            duration: currentProcess.burst
+        });
+
+        totalWaiting += waitingTime;
+        totalTurnaround += turnaroundTime;
+        waktu = completionTime;
+        currentProcess.completed = true;
+        completed++;
+    }
+
+    // Tampilkan hasil
+    let output = `<h2><i class="fas fa-chart-bar mr-2"></i> Hasil Simulasi</h2>
+    
+    <div class="gantt-container">
+        <h3><i class="fas fa-project-diagram mr-2"></i> Gantt Chart</h3>
+        ${generateGanttChart(ganttData)}
+    </div>
+    
+    <div class="table-responsive">
+        <h3><i class="fas fa-table mr-2"></i> Tabel Proses</h3>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Proses</th>
+                        <th><i class="fas fa-microchip"></i> CPU Time</th>
+                        <th><i class="fas fa-clock"></i> Waktu Datang</th>
+                        <th><i class="fas fa-play"></i> Mulai</th>
+                        <th><i class="fas fa-flag-checkered"></i> Selesai</th>
+                        <th><i class="fas fa-hourglass-half"></i> Waktu Tunggu</th>
+                        <th><i class="fas fa-stopwatch"></i> Turnaround Time</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+    hasil.forEach(p => {
+        output += `<tr>
+            <td><span class="process-badge" style="background-color: ${getProcessColor(p.id)}; color: white; padding: 5px 10px; border-radius: 20px;">P${p.id}</span></td>
+            <td>${p.burst}</td>
+            <td>${p.arrival}</td>
+            <td>${p.startTime}</td>
+            <td>${p.completionTime}</td>
+            <td>${p.waiting}</td>
+            <td>${p.turnaround}</td>
+        </tr>`;
+    });
+
+    output += `</tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div style="margin-top: 30px; background: rgba(67, 97, 238, 0.1); padding: 20px; border-radius: 10px;">
+        <h3><i class="fas fa-chart-pie mr-2"></i> Ringkasan Performa</h3>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h4><i class="fas fa-clock mr-2"></i> Rata-rata Waktu Tunggu</h4>
+                <p style="font-size: 1.5rem; font-weight: 600; color: var(--primary);">${(totalWaiting / n).toFixed(2)}</p>
+            </div>
+            <div class="summary-card">
+                <h4><i class="fas fa-stopwatch mr-2"></i> Rata-rata Turnaround Time</h4>
+                <p style="font-size: 1.5rem; font-weight: 600; color: var(--primary);">${(totalTurnaround / n).toFixed(2)}</p>
+            </div>
+        </div>
+    </div>`;
+
+    const hasilDiv = document.getElementById("hasil");
+    hasilDiv.innerHTML = output;
+    hasilDiv.style.display = "block";
+    
+    // Animasi scroll ke hasil
+    hasilDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function generateGanttChart(ganttData) {
+    if (ganttData.length === 0) return '<p>Tidak ada data untuk ditampilkan</p>';
+    
+    // Find total duration
+    const totalDuration = ganttData[ganttData.length - 1].end;
+    const scale = 100 / totalDuration;
+    
+    // Create bars
+    let barsHtml = '<div class="gantt-chart">';
+    
+    ganttData.forEach(item => {
+        const width = item.duration * scale;
+        const color = item.type === 'idle' ? 'var(--danger)' : getProcessColor(item.process);
+        const label = item.type === 'process' ? 'P'+item.process : 'Idle';
+        
+        barsHtml += `
+        <div class="gantt-bar" style="flex: 0 0 ${width}%; background-color: ${color};">
+            <span>${label}</span>
+            <div class="gantt-time">${item.start}-${item.end}</div>
+        </div>`;
+    });
+    
+    barsHtml += '</div>';
+    
+    return barsHtml;
+}
+
+function getProcessColor(processId) {
+    const colors = [
+        '#4361ee', '#3f37c9', '#4895ef', '#4cc9f0',
+        '#7209b7', '#560bad', '#480ca8', '#3a0ca3',
+        '#3f37c9', '#4361ee'
+    ];
+    return colors[processId % colors.length];
+}
+
+// Toggle sidebar for mobile
+document.getElementById('sidebarToggle').addEventListener('click', function() {
+    document.getElementById('layoutSidenav_nav').classList.toggle('sb-sidenav-toggled');
+    document.getElementById('layoutSidenav_content').classList.toggle('sb-sidenav-toggled');
+});
+</script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="js/scripts.js"></script>
 </body>
