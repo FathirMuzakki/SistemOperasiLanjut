@@ -1,28 +1,402 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
+    <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <meta name="description" content="" />
-    <meta name="author" content="" />
-    <title>Shortest Remaining Time First</title>
+    <meta name="description" content="Shortest Remaining First Scheduling Algorithm Simulation" />
+    <meta name="author" content="Fathir Muzakki" />
+    <title>Shortest Remaining First</title>
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
     <link href="css/styles.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
-<style>
-  body { font-family: sans-serif; padding: 20px; background: #f5f7fa; }
-  table { border-collapse: collapse; width: 100%; margin-top: 20px; background: white; }
-  th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-  th { background: #28a745; color: white; }
-  input { padding: 5px; width: 80px; margin: 5px; }
-  button { padding: 8px 16px; margin-top: 10px; background: #28a745; color: white; border: none; cursor: pointer; }
-  .gantt { display: flex; margin-top: 20px; }
-  .gantt div { padding: 4px; margin:1px; background: #007bff; color: white; font-size:12px; text-align:center; }
-</style>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --dark: #1b263b;
+            --light: #f8f9fa;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --info: #43aa8b;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7ff;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        /* Layout improvements for mobile */
+        #layoutSidenav {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        #layoutSidenav_content {
+            flex: 1;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .glass-card:hover {
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        h1, h2, h3, h4 {
+            color: var(--dark);
+            font-weight: 600;
+            margin-top: 0;
+        }
+        
+        h1 {
+            font-size: clamp(1.8rem, 4vw, 2.2rem);
+            margin-bottom: 1.5rem;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        label {
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+            display: block;
+            font-size: clamp(0.9rem, 3vw, 1rem);
+        }
+        
+        input[type="number"] {
+            padding: 10px 15px;
+            width: 100%;
+            max-width: 120px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background-color: rgba(255,255,255,0.7);
+            box-sizing: border-box;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-secondary {
+            background-color: var(--accent);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(72, 149, 239, 0.3);
+        }
+        
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+            margin-top: 20px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            font-size: clamp(0.8rem, 2vw, 1rem);
+        }
+        
+        th, td {
+            padding: 12px 8px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
+        }
+        
+        tr:nth-child(even) {
+            background-color: rgba(248, 249, 250, 0.5);
+        }
+        
+        tr:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        /* Form styles */
+        .form-container {
+            margin-top: 20px;
+        }
+        
+        .process-form {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 10px;
+        }
+        
+        .process-label {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: clamp(1rem, 3vw, 1.1rem);
+        }
+        
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .input-field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        /* Gantt Chart Styles */
+        .gantt-container {
+            margin: 30px 0;
+            overflow-x: auto;
+            padding: 15px 0;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .gantt-chart {
+            display: flex;
+            height: 60px;
+            position: relative;
+            margin-bottom: 30px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 8px;
+            padding: 5px;
+            min-width: fit-content;
+        }
+        
+        .gantt-bar {
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgb(11, 11, 11);
+            font-weight: 600;
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
+            position: relative;
+            border-radius: 6px;
+            margin-right: 2px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .gantt-bar:hover {
+            transform: scale(1.05);
+            z-index: 2;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        .gantt-bar.idle {
+            background-color: var(--danger);
+        }
+        
+        .gantt-bar.context-switch {
+            background-color: var(--warning);
+        }
+        
+        .gantt-time {
+            position: absolute;
+            bottom: -25px;
+            width: 100%;
+            text-align: center;
+            font-size: clamp(0.6rem, 2vw, 0.7rem);
+            color: var(--dark);
+            font-weight: 500;
+        }
+        
+        .gantt-process-label {
+            position: absolute;
+            top: -25px;
+            width: 100%;
+            text-align: center;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: clamp(0.7rem, 2vw, 0.8rem);
+        }
+        
+        /* Navigation styles */
+        nav.sb-topnav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 10px 15px;
+        }
+        
+        .navbar-brand {
+            font-size: 1.2rem;
+            white-space: nowrap;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            #layoutSidenav_content {
+                padding: 15px;
+            }
+            
+            .glass-card {
+                padding: 15px;
+            }
+            
+            .process-form {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .input-group {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .input-field {
+                width: 100%;
+                min-width: 100%;
+            }
+            
+            input[type="number"] {
+                max-width: 100%;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-top: 10px;
+                padding: 10px 15px;
+            }
+            
+            th, td {
+                padding: 8px 5px;
+            }
+            
+            .gantt-bar {
+                height: 40px;
+            }
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+        
+        /* Performance summary grid */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        /* Process colors for Gantt chart */
+        .process-color-1 { background-color: #4361ee; }
+        .process-color-2 { background-color: #3f37c9; }
+        .process-color-3 { background-color: #4895ef; }
+        .process-color-4 { background-color: #4cc9f0; }
+        .process-color-5 { background-color: #7209b7; }
+        .process-color-6 { background-color: #560bad; }
+        .process-color-7 { background-color: #480ca8; }
+        .process-color-8 { background-color: #3a0ca3; }
+    </style>
 </head>
 <body class="sb-nav-fixed">
-  <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
         <a class="navbar-brand ps-3" href="index.html">Fathir Muzakki</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle"><i class="fas fa-bars"></i></button>
     </nav>
@@ -33,7 +407,7 @@
                     <div class="nav">
                         <div class="sb-sidenav-menu-heading">Menu</div>
                         <a class="nav-link" href="index.html">
-                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                            <div class="sb-nav-link-icon"><i class="fa-solid fa-house"></i></div>
                             Pilih Metode
                         </a>
                         <div class="sb-sidenav-menu-heading">Non-Preemptive</div>
@@ -41,7 +415,7 @@
                         <a class="nav-link" href="sjf.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-recycle"></i></div>SJF</a>
                         <div class="sb-sidenav-menu-heading">Preemptive</div>
                         <a class="nav-link" href="roundrobin.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-robot"></i></div>ROUND ROBIN</a>
-                        <a class="nav-link" href="srf.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-repeat"></i></div>SRF</a>
+                        <a class="nav-link active" href="srf.html"><div class="sb-nav-link-icon"><i class="fa-solid fa-repeat"></i></div>SRF</a>
                     </div>
                 </div>
                 <div class="sb-sidenav-footer">
@@ -52,101 +426,320 @@
         </div>
         <div id="layoutSidenav_content">
             <main>
-                <div class="container-fluid px-4">
-                    <h1 class="mt-4">Simulasi Shortest Remaining Time First</h1>
-                    <label>Jumlah Proses:</label>
-                    <input type="number" id="jumlahProses" min="1" required>
-                    <button onclick="buatForm()">Buat Form</button>
-                    <div id="formContainer"></div>
-                    <div id="hasil"></div>
+                <div class="container-fluid px-3 px-md-4">
+                    <div class="glass-card animate-fade">
+                        <h1><i class="fas fa-stopwatch mr-2"></i> Simulasi Penjadwalan Shortest Remaining First</h1>
+                        <div class="form-group">
+                            <label for="jumlahProses">Jumlah Proses:</label>
+                            <div class="input-group" style="gap: 15px; align-items: center;">
+                                <input type="number" id="jumlahProses" min="1" required>
+                                <button class="btn btn-primary" onclick="buatForm()">
+                                    <i class="fas fa-plus-circle mr-1"></i> Buat Form
+                                </button>
+                                <button class="btn btn-danger" onclick="awal()">
+                                    <i class="fa-solid fa-house"></i> Kembali
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="formContainer" class="form-container"></div>
+                    <div id="hasil" class="glass-card animate-fade" style="display: none;"></div>
                 </div>
             </main>
         </div>
     </div>
 
 <script>
+function awal() {
+    window.location.href = 'index.html'; 
+}
 function buatForm() {
-  const n = +document.getElementById('n').value;
-  if(n<1){ return }
-  let html = '<form id="srtfForm">';
-  for(let i=0;i<n;i++){
-    html += `P${i+1}: Arrival <input name="at" type="number" required> Burst <input name="bt" type="number" required><br>`;
-  }
-  html += '<button type="button" onclick="hitung()">Hitung SRTF</button></form>';
-  document.getElementById('formContainer').innerHTML = html;
-  document.getElementById('hasil').innerHTML = '';
-  document.getElementById('gantt').innerHTML = '';
+    const jumlah = parseInt(document.getElementById("jumlahProses").value);
+    const container = document.getElementById("formContainer");
+    container.innerHTML = "";
+
+    if (isNaN(jumlah) || jumlah < 1) {
+        container.innerHTML = `<div class="glass-card" style="color: var(--danger);">
+            <i class="fas fa-exclamation-circle mr-2"></i> Masukkan jumlah proses yang valid.
+        </div>`;
+        return;
+    }
+
+    let html = `<div class="glass-card animate-fade">
+        <h3><i class="fas fa-edit mr-2"></i> Input Proses</h3>
+        <form id="dataForm">`;
+    
+    for (let i = 0; i < jumlah; i++) {
+        html += `
+        <div class="process-form">
+            <div class="process-label"><i class="fas fa-tasks mr-2"></i> Proses P${i + 1}</div>
+            <div class="input-group">
+                <div class="input-field">
+                    <label><i class="fas fa-microchip mr-1"></i> CPU Time:</label>
+                    <input type="number" name="burst" min="1" value="1" required>
+                </div>
+                <div class="input-field">
+                    <label><i class="fas fa-clock mr-1"></i> Arrival Time:</label>
+                    <input type="number" name="arrival" min="0" value="0" required>
+                </div>
+            </div>
+        </div>`;
+    }
+    
+    html += `
+        <div class="process-form">
+            <div class="process-label"><i class="fas fa-cog mr-2"></i> Parameter</div>
+            <div class="input-group">
+                <div class="input-field">
+                    <label><i class="fas fa-exchange-alt mr-1"></i> Context Switch:</label>
+                    <input type="number" id="contextSwitchTime" min="0" value="0" required>
+                </div>
+                <div class="input-field">
+                    <label><i class="fas fa-hourglass-half mr-1"></i> Quantum Time:</label>
+                    <input type="number" id="quantumTime" min="1" value="1" required>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="hitung()">
+            <i class="fas fa-calculator mr-1"></i> Hitung SRF
+        </button>
+        </form>
+    </div>`;
+    
+    container.innerHTML = html;
+    document.getElementById("hasil").style.display = "none";
 }
 
 function hitung() {
-  const form = document.getElementById('srtfForm');
-  const ats = Array.from(form.elements['at']).map(i=>+i.value);
-  const bts = Array.from(form.elements['bt']).map(i=>+i.value);
-  const n = ats.length;
-  const procs = ats.map((at,i)=>({
-    id: i+1,
-    at, bt: bts[i],
-    rem: bts[i],
-    ct:0, wt:0, tat:0, done:false
-  }));
-
-  let t=0, doneCount=0;
-  const gantt = [];
-  while(doneCount<n){
-    let idx=-1, minRem=Infinity;
-    procs.forEach((p,i)=>{
-      if(!p.done && p.at<=t && p.rem<minRem){
-        minRem=p.rem; idx=i;
-      }
-    });
-    if(idx!==-1){
-      procs[idx].rem--;
-      gantt.push(`P${procs[idx].id}`);
-      if(procs[idx].rem===0){
-        const p = procs[idx];
-        p.done=true; doneCount++;
-        p.ct = t+1;
-        p.tat = p.ct - p.at;
-        p.wt = p.tat - p.bt;
-      }
-    } else {
-      gantt.push('-'); // idle
+    const form = document.forms["dataForm"];
+    if (!form) {
+        alert('Silakan buat form input terlebih dahulu');
+        return;
     }
-    t++;
-  }
-
-  // tampilkan hasil
-  let html = `<table>
-    <tr><th>Proses</th><th>Arrival</th><th>Burst</th><th>Waiting</th><th>Turnaround</th></tr>`;
-  let sumWT=0, sumTAT=0;
-  procs.forEach(p=>{
-    html += `<tr><td>P${p.id}</td><td>${p.at}</td><td>${p.bt}</td><td>${p.wt}</td><td>${p.tat}</td></tr>`;
-    sumWT+=p.wt; sumTAT+=p.tat;
-  });
-  html += `</table>
-    <p><strong>Avg Waiting Time:</strong> ${(sumWT/n).toFixed(2)}</p>
-    <p><strong>Avg Turnaround Time:</strong> ${(sumTAT/n).toFixed(2)}</p>`;
-  document.getElementById('hasil').innerHTML = html;
-
-  // Gantt chart sederhana
-  const gdiv = document.getElementById('gantt');
-  let current = gantt[0], len=1;
-  gantt.slice(1).forEach(step=>{
-    if(step===current){
-      len++;
-    } else {
-      const d = document.createElement('div');
-      d.style.width = `${len*20}px`;
-      d.textContent = current;
-      gdiv.appendChild(d);
-      current=step; len=1;
+    
+    const burstInputs = form.querySelectorAll("input[name='burst']");
+    const arrivalInputs = form.querySelectorAll("input[name='arrival']");
+    
+    const processes = Array.from(burstInputs).map((input, index) => ({
+        id: index + 1,
+        burstTime: parseInt(input.value),
+        arrivalTime: parseInt(arrivalInputs[index].value),
+        remainingTime: parseInt(input.value),
+        startTime: -1,
+        finishTime: -1,
+        quantumUsed: 0
+    }));
+    
+    const contextSwitchTime = parseInt(document.getElementById("contextSwitchTime").value) || 0;
+    const quantumTime = parseInt(document.getElementById("quantumTime").value) || 1;
+    const n = processes.length;
+    
+    // Sort processes by arrival time initially
+    processes.sort((a, b) => a.arrivalTime - b.arrivalTime);
+    
+    let currentTime = 0;
+    let completed = 0;
+    let currentProcess = null;
+    let lastProcess = null;
+    let contextSwitchCount = 0;
+    const ganttData = [];
+    const waitingTimes = Array(n).fill(0);
+    const turnaroundTimes = Array(n).fill(0);
+    
+    while (completed < n) {
+        // Find all arrived processes with remaining time
+        const arrivedProcesses = processes.filter(p => 
+            p.arrivalTime <= currentTime && p.remainingTime > 0
+        );
+        
+        if (arrivedProcesses.length === 0) {
+            // No processes arrived yet, advance time
+            currentTime++;
+            continue;
+        }
+        
+        // Find process with shortest remaining time
+        const nextProcess = arrivedProcesses.reduce((prev, curr) => 
+            prev.remainingTime < curr.remainingTime ? prev : curr
+        );
+        
+        // Check if we need to do a context switch
+        if (currentProcess && currentProcess.id !== nextProcess.id) {
+            // Add context switch to Gantt chart
+            if (lastProcess !== null && lastProcess.id !== nextProcess.id) {
+                ganttData.push({
+                    type: 'context-switch',
+                    start: currentTime,
+                    end: currentTime + contextSwitchTime,
+                    duration: contextSwitchTime
+                });
+                currentTime += contextSwitchTime;
+                contextSwitchCount++;
+            }
+        }
+        
+        // Record start time if this is the first time the process runs
+        if (nextProcess.startTime === -1) {
+            nextProcess.startTime = currentTime;
+        }
+        
+        // Execute the process for 1 time unit (preemptive)
+        const execStart = currentTime;
+        nextProcess.remainingTime--;
+        nextProcess.quantumUsed++;
+        currentTime++;
+        
+        // Add to Gantt chart
+        ganttData.push({
+            type: 'process',
+            process: nextProcess.id,
+            start: execStart,
+            end: currentTime,
+            duration: 1
+        });
+        
+        currentProcess = nextProcess;
+        lastProcess = nextProcess;
+        
+        // Check if process completed
+        if (nextProcess.remainingTime === 0) {
+            completed++;
+            nextProcess.finishTime = currentTime;
+            
+            // Calculate waiting and turnaround times
+            const index = nextProcess.id - 1;
+            turnaroundTimes[index] = nextProcess.finishTime - nextProcess.arrivalTime;
+            waitingTimes[index] = turnaroundTimes[index] - nextProcess.burstTime;
+        }
+        
+        // Check if quantum time is reached (even though SRF is preemptive, we can use quantum as max time slice)
+        if (nextProcess.quantumUsed >= quantumTime && nextProcess.remainingTime > 0) {
+            nextProcess.quantumUsed = 0; // Reset quantum counter
+            // Force context switch next iteration
+            currentProcess = null;
+        }
     }
-  });
-  const d = document.createElement('div');
-  d.style.width = `${len*20}px`;
-  d.textContent = current;
-  gdiv.appendChild(d);
+
+    // Tampilkan hasil
+    let output = `<h2><i class="fas fa-chart-bar mr-2"></i> Hasil Simulasi</h2>
+    
+    <div class="gantt-container">
+        <h3><i class="fas fa-project-diagram mr-2"></i> Gantt Chart</h3>
+        ${generateGanttChart(ganttData)}
+    </div>
+    
+    <div class="table-responsive">
+        <h3><i class="fas fa-table mr-2"></i> Tabel Proses</h3>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Proses</th>
+                        <th><i class="fas fa-microchip"></i> CPU Time</th>
+                        <th><i class="fas fa-clock"></i> Arrival Time</th>
+                        <th><i class="fas fa-hourglass-half"></i> Waiting Time</th>
+                        <th><i class="fas fa-stopwatch"></i> Turnaround Time</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+    let totalWaiting = 0, totalTurnaround = 0;
+    for (let i = 0; i < n; i++) {
+        output += `<tr>
+            <td><span class="process-badge" style="background-color: ${getProcessColor(i + 1)}; color: black; padding: 5px 10px; border-radius: 20px;">P${i + 1}</span></td>
+            <td>${processes[i].burstTime}</td>
+            <td>${processes[i].arrivalTime}</td>
+            <td>${waitingTimes[i]}</td>
+            <td>${turnaroundTimes[i]}</td>
+        </tr>`;
+        totalWaiting += waitingTimes[i];
+        totalTurnaround += turnaroundTimes[i];
+    }
+
+    output += `</tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div style="margin-top: 30px; background: rgba(67, 97, 238, 0.1); padding: 20px; border-radius: 10px;">
+        <h3><i class="fas fa-chart-pie mr-2"></i> Ringkasan Performa</h3>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h4><i class="fas fa-clock mr-2"></i> Rata-rata Waiting Time</h4>
+                <p style="font-size: 1.5rem; font-weight: 600; color: var(--primary);">${(totalWaiting / n).toFixed(2)}</p>
+            </div>
+            <div class="summary-card">
+                <h4><i class="fas fa-stopwatch mr-2"></i> Rata-rata Turnaround Time</h4>
+                <p style="font-size: 1.5rem; font-weight: 600; color: var(--primary);">${(totalTurnaround / n).toFixed(2)}</p>
+            </div>
+            <div class="summary-card">
+                <h4><i class="fas fa-exchange-alt mr-2"></i> Total Context Switch</h4>
+                <p style="font-size: 1.5rem; font-weight: 600; color: var(--warning);">${contextSwitchCount}</p>
+            </div>
+            <div class="summary-card">
+                <h4><i class="fas fa-clock mr-2"></i> Total Waktu Eksekusi</h4>
+                <p style="font-size: 1.5rem; font-weight: 600; color: var(--success);">${currentTime}</p>
+            </div>
+            <div class="summary-card">
+                <h4><i class="fas fa-hourglass-half mr-2"></i> Quantum Time</h4>
+                <p style="font-size: 1.5rem; font-weight: 600; color: var(--info);">${quantumTime}</p>
+            </div>
+        </div>
+    </div>`;
+
+    const hasilDiv = document.getElementById("hasil");
+    hasilDiv.innerHTML = output;
+    hasilDiv.style.display = "block";
+    
+    // Animasi scroll ke hasil
+    hasilDiv.scrollIntoView({ behavior: 'smooth' });
 }
+
+function generateGanttChart(ganttData) {
+    if (ganttData.length === 0) return '<p>Tidak ada data untuk ditampilkan</p>';
+    
+    // Find total duration
+    const totalDuration = ganttData[ganttData.length - 1].end;
+    const scale = 100 / totalDuration;
+    
+    // Create bars
+    let barsHtml = '<div class="gantt-chart">';
+    
+    ganttData.forEach(item => {
+        const width = item.duration * scale;
+        let color, label;
+        
+        if (item.type === 'context-switch') {
+            color = 'var(--warning)';
+            label = 'CS';
+        } else {
+            color = getProcessColor(item.process);
+            label = 'P' + item.process;
+        }
+        
+        barsHtml += `
+        <div class="gantt-bar ${item.type === 'context-switch' ? 'context-switch' : ''}" 
+             style="flex: 0 0 ${width}%; background-color: ${color};">
+            <span>${label}</span>
+            <div class="gantt-time">${item.start}-${item.end}</div>
+        </div>`;
+    });
+    
+    barsHtml += '</div>';
+    
+    return barsHtml;
+}
+
+function getProcessColor(processId) {
+    return `var(--process-color-${(processId % 8) + 1})`;
+}
+
+// Toggle sidebar for mobile
+document.getElementById('sidebarToggle').addEventListener('click', function() {
+    document.getElementById('layoutSidenav_nav').classList.toggle('sb-sidenav-toggled');
+    document.getElementById('layoutSidenav_content').classList.toggle('sb-sidenav-toggled');
+});
 </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="js/scripts.js"></script>
