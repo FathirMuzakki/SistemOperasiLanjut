@@ -220,23 +220,6 @@
             -webkit-overflow-scrolling: touch;
         }
         
-        .gantt-header {
-            display: flex;
-            margin-bottom: 10px;
-            background: rgba(255,255,255,0.7);
-            padding: 10px;
-            border-radius: 8px;
-            min-width: fit-content;
-        }
-        
-        .gantt-header-item {
-            text-align: 50px;
-            font-weight: 600;
-            font-size: clamp(0.7rem, 2vw, 0.9rem);
-            color: var(--dark);
-            flex-shrink: 0;
-        }
-        
         .gantt-chart {
             display: flex;
             height: 60px;
@@ -659,11 +642,7 @@ function generateGanttChart(ganttData) {
     const scale = 100 / totalDuration;
     
     // Create header with time markers
-    let headerHtml = '<div class="gantt-header">';
-    for (let i = 0; i <= totalDuration; i++) {
-        headerHtml += `<div class="gantt-header-item" style="flex: 0 0 ${scale}%;">${i}</div>`;
-    }
-    headerHtml += '</div>';
+    
     
     // Create bars
     let barsHtml = '<div class="gantt-chart">';
@@ -682,7 +661,7 @@ function generateGanttChart(ganttData) {
     
     barsHtml += '</div>';
     
-    return headerHtml + barsHtml;
+    return barsHtml;
 }
 
 function getProcessColor(processId) {
